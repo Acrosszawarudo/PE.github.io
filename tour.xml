@@ -4,6 +4,8 @@
 
 	<plugin name="toolbox" url="plugins/toolbox/toolboxV2.js" keep="true" visible="false" align="lefttop" zorder="10"/>
 
+	<include url="%VIEWER%/plugins/depthmap_navigation.xml" />
+
 	<style name="roomspot" alpha="0.0" capture="false" />
 
 	<!-- customize skin settings: maps, gyro, webvr, thumbnails, tooltips, layout, design, ... -->
