@@ -2,6 +2,10 @@
 
 	<include url="skin/vtourskin.xml" />
 
+	<plugin name="toolbox" url="plugins/toolbox/toolboxV2.js" keep="true" visible="false" align="lefttop" zorder="10"/>
+
+	<style name="roomspot" alpha="0.0" capture="false" />
+
 	<!-- customize skin settings: maps, gyro, webvr, thumbnails, tooltips, layout, design, ... -->
 	<skin_settings maps="false"
 	               maps_type="google"
@@ -59,10 +63,131 @@
 	               />
 
 
+	<!-- use a <style> to share the same attriubtes for all hotspots -->
+	<style name="flyoutimage"
+	       renderer="webgl"
+	       distorted="true"
+	       flying="0.0"
+	       backup_state=""
+	       backup_zorder=""
+	       flying_state="in"
+	       capture="true"
+	       onclick="flyout_hotspot()"
+	       />
+
+	<!-- flyout hotspot actions -->
+	<action name="flyout_hotspot">
+		for(set(i,0), i LT hotspot.count, inc(i),
+			copy(hs, hotspot[get(i)]);
+			if(hs.name != name AND hs.style == 'flyoutimage' AND (hs.flying_state == 'out' OR hs.flying_state == 'flyingout'),
+				callwith(hs, flyout_hotspot() );
+			  );
+		  );
+
+
+		if(flying_state == 'flyingout',
+			set(flying_state, 'flyingin');
+		  ,
+			if(flying_state == 'flyingin',
+				set(flying_state, 'flyingout');
+		  	  );
+		  );
+
+		if(flying_state == 'in',
+			calc(backup_state, '0.0|' + rx + '|' + ry + '|' + rz + '|' + scale);
+			copy(backup_zorder, zorder);
+			set(flying_state, 'flyingout');
+		  );
+
+		if(flying_state == 'out',
+			set(flying_state, 'flyingin');
+		  );
+
+		if(flying_state == 'flyingout',
+			set(zorder, 99);
+			tween(flying|rx|ry|rz|scale, ('1.0|0.0|0.0|0.0|'+0.9*min(stagewidth/sourcewidth,stageheight/sourceheight)), 0.5, default, set(flying_state,'out'); );
+		  );
+
+		if(flying_state == 'flyingin',
+			sub(zorder,1);
+			tween(flying|rx|ry|rz|scale, get(backup_state), 0.5, default, set(flying_state,'in'); copy(zorder,backup_zorder); );
+		  );
+	</action>
 	
+	
+	<action name="scene3dtransition" scope="local" args="scenename, hlookatoffset">
+		motionblur = 0.5;
+		transitiondelay = 0.0;
+		transitiontime = 0.5;
+		transitiontweentype = "easeoutquad";
+		
+		if(caller AND caller.ishotspot,
+			<!-- called from a hotspot, move toward the hotspot -->
+			if(caller.depth == 0,
+				<!-- 3d placed hotspot -->
+				set3dtransition("image", caller.tx,caller.ty,caller.tz, motionblur, hlookatoffset, transitiondelay, transitiontime, transitiontweentype);
+			  ,
+				<!-- a hotspot with a spherical position -->
+				caller.getcenter(h,v);
+				if(v GT -50 AND v LT +50 AND caller.depth GT 120, set(v,0));
+				set3dtransition("sphere", h,v,(min(caller.depth,1000)), motionblur, hlookatoffset, transitiondelay, transitiontime, transitiontweentype);
+			);
+		  ,
+			<!-- called from a layer or a script, recenter at the new pano center (3d-model/depthmap panos only) -->
+			if(image.depthmap.url,
+				set3dtransition("image", 0,0,0, motionblur, hlookatoffset, transitiondelay, transitiontime, transitiontweentype);
+			);
+		);
+
+		loadscene(get(scenename), null, MERGE, BLEND(get(transitiontime),get(transitiontweentype)));
+	</action>
+
+	<action name="do_crop_animation" scope="local" args="framewidth, frameheight, framerate">
+		<!-- define local variables -->
+		calc(local.xframes, (caller.imagewidth /framewidth) BOR 0);
+		calc(local.frames, xframes * ((caller.imageheight / frameheight) BOR 0));
+		def(local.frame, integer, 0);
+		
+		<!-- set the first frame -->
+		calc(caller.crop, '0|0|' + framewidth + '|' + frameheight);
+		
+		<!-- do the animation -->
+		setinterval(calc('crop_anim_' + caller.name), calc(1.0 / framerate),
+			if(caller.loaded,
+				inc(frame);
+				if(frame GE frames, if(caller.onlastframe !== null, callwith(caller, onlastframe() ) ); set(frame,0); );
+				mod(xpos, frame, xframes);
+				div(ypos, frame, xframes);
+				Math.floor(ypos);
+				mul(xpos, framewidth);
+				mul(ypos, frameheight);
+				calc(caller.crop, xpos + '|' + ypos + '|' + framewidth + '|' + frameheight);
+			  ,
+				<!-- stop the interval when the hotspot gets removed -->
+				clearinterval(calc('crop_anim_' + caller.name));
+			);
+		);
+	</action>
+
+
 	<scene name="scene_Garden1" title="Garden1" onstart="" thumburl="panos/Garden1.tiles/thumb.jpg" lat="" lng="" alt="" heading="">
 		
 		<control bouncinglimits="calc:image.cube ? true : false" />
+
+		<hotspot name="spot1" style="flyoutimage"
+	         url="RosaBayahibe.png"
+	         zorder="1"
+	         ath="89.9490186"
+	         atv="19"
+	         scale="0.6"
+	         />
+
+		<hotspot name="hs56313" style="roomspot|skin_tooltips" tooltip="get:scene[scene_Garden2].title" onclick="scene3dtransition(scene_Garden2);">
+			<point ath="-7.9700285" atv="-11.3979711" />
+			<point ath="-8.8924159" atv="20.7927252" />
+			<point ath="19.0991137" atv="18.8532630" />
+			<point ath="19.1419485" atv="-10.0380080" />
+		</hotspot>
 
 		<view hlookat="0.0" vlookat="0.0" fovtype="MFOV" fov="120" maxpixelzoom="2.0" fovmin="70" fovmax="140" limitview="auto" />
 
@@ -78,6 +203,16 @@
 		
 		<control bouncinglimits="calc:image.cube ? true : false" />
 
+		<hotspot name="spot2" style="flyoutimage"
+	         url="FlorFuchsia.png"
+	         zorder="1"
+	         ath="89.9490186"
+	         atv="19"
+	         scale="0.6"
+	         />
+
+		<hotspot name="spot1" url="waves.png"   onloaded="do_crop_animation(128,128, 15);" ath="-169.2708189" atv="4.1756912" onclick="scene3dtransition(scene_Garden3);" scale="0.25" zoom="true" />
+
 		<view hlookat="0.0" vlookat="0.0" fovtype="MFOV" fov="120" maxpixelzoom="2.0" fovmin="70" fovmax="140" limitview="auto" />
 
 		<preview url="panos/Garden2.tiles/preview.jpg" />
@@ -91,6 +226,14 @@
 	<scene name="scene_Garden3" title="Garden3" onstart="" thumburl="panos/Garden3.tiles/thumb.jpg" lat="" lng="" alt="" heading="">
 		
 		<control bouncinglimits="calc:image.cube ? true : false" />
+
+		<hotspot name="spot3" style="flyoutimage"
+	         url="FlorCopey.png"
+	         zorder="1"
+	         ath="89.9490186"
+	         atv="19"
+	         scale="0.6"
+	         />
 
 		<view hlookat="0.0" vlookat="0.0" fovtype="MFOV" fov="120" maxpixelzoom="2.0" fovmin="70" fovmax="140" limitview="auto" />
 
