@@ -58,17 +58,6 @@
 	               design_text_shadow="1"
 	               />
 
-	<!--
-	    For an alternative skin design either change the <skin_settings> values 
-	    from above or optionally include one of the predefined designs from below.
-	-->
-	<!-- <include url="skin/vtourskin_design_flat_light.xml"  /> -->
-	<!-- <include url="skin/vtourskin_design_glass.xml"       /> -->
-	<!-- <include url="skin/vtourskin_design_ultra_light.xml" /> -->
-	<!-- <include url="skin/vtourskin_design_117.xml"         /> -->
-	<!-- <include url="skin/vtourskin_design_117round.xml"    /> -->
-	<!-- <include url="skin/vtourskin_design_black.xml"       /> -->
-	
 
 	
 	<scene name="scene_Garden1" title="Garden1" onstart="" thumburl="panos/Garden1.tiles/thumb.jpg" lat="" lng="" alt="" heading="">
@@ -154,6 +143,5 @@
 		</image>
 
 	</scene>
-
 
 </krpano>
