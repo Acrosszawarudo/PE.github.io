@@ -2,7 +2,8 @@
 
 	<include url="skin/vtourskin.xml" />
 	<include url="%VIEWER%/plugins/webvr.xml" />
-	
+	<plugin name="WebVR" mobilevr_fake_support="true" vr_cursor="" />
+
 	<plugin name="toolbox" url="plugins/toolbox/toolboxV2.js" keep="true" visible="false" align="lefttop" zorder="10"/>
 
 	<include url="%VIEWER%/plugins/depthmap_navigation.xml" />
