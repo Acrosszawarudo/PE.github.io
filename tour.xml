@@ -1,7 +1,8 @@
 ﻿<krpano version="1.21" title="Virtual Tour">
 
 	<include url="skin/vtourskin.xml" />
-
+	<include url="%VIEWER%/plugins/webvr.xml" />
+	
 	<plugin name="toolbox" url="plugins/toolbox/toolboxV2.js" keep="true" visible="false" align="lefttop" zorder="10"/>
 
 	<include url="%VIEWER%/plugins/depthmap_navigation.xml" />
